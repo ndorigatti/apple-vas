@@ -160,7 +160,7 @@ Commands are executed as follows:
    | SHA256 of pass id   | `9f25` | `32`     | `03b57cdb3eca0984ba9abdc2fb45d86626d87b39d33c5c6dbbc313a6347a3146` | SHA of pass type identifier, such as `pass.com.passkit.pksamples.nfcdemo`                                                                          |
    | Capabilities mask   | `9f26` | `04`     | `00800002`                                                         | More info below                                                                                                                                    |
    | Merchant signup URL | `9f29` | Variable | `68747470733a2f2f6170706c652e636f6d`                               | URL pointing to a HTTPS signup json signed by pass certificate                                                                                     |
-   | Filter              | `9f2b` | `05`     | `0100000000`                                                       | Meaning unknown, mentioned in public configuration PDFs (look at References section). Values other than provided in example make pass reading fail |
+   | Filter              | `9f28` | `04`     | `01000000`                                                       | Meaning unknown, mentioned in public configuration PDFs (look at References section). Values other than provided in example make pass reading fail |
 
 ### Capabilities mask
 
@@ -216,8 +216,8 @@ Command TLV data example:
          3146
       9f26[04]:
          00800002
-      9f2b[05]:
-         0100000000
+      9f28[04]:
+         01000000
       9f29[11]:               
          68747470733a2f2f6170706c652e636f6d
       ```
@@ -286,7 +286,7 @@ In both situations, decryption is done in the following steps:
 3. Using the pass private key, do ECDH exchange with device ephemeral key, receiving shared key `shared_key`;
 4. Shared key `shared_key` is used together with shared info `shared_info` in X963KDF algorithm in order to get the derived key `derived_key`;
 5. Derived key `derived_key` is then used via AESGCM in order to decrypt pass data. 
-* If your library requires it, you can prepend any sign byte (`02`, `03`) to the EC public key data if you want to load it into an object representation during one of the steps.
+* If your library requires it, you can prepend any sign byte (`02`, `03`) to the EC public key data if you want to load it into an object representation during one of the steps. (Byte sign `02` should be used as it is the indicator of compressed even Y, the same as it is encoded in the pass response).
 
 Documentation on how to generate shared information and derived keys (steps 4. 5.) is not present in this document.
 For that information, visit [the following gist](https://gist.github.com/gm3197/ad0959476346cef69b75ea0523214350).  Don't forget to thank the author. 
@@ -308,7 +308,8 @@ Correct shared info calculation is omitted, but can be reconstructed by followin
   I am in no way, shape or form affiliated with that person. All findings described here were made on my own.  
   Nevertheless, considering the timings, **they were the first one** to publish the **fully reproducible Apple VAS spec**, so **much gratitude** should be dedicated **to them** in this regard.  
   To support their work, give their repo/profile a visit/bookmark, you'd need to do that anyway in order to get information on shared info generation :).
-- If you are interested in a fully code-complete Apple VAS implementation, you can look at the one made by [@gm3197](https://github.com/gm3197) that was added into a [Proxmark3](https://github.com/RfidResearchGroup/proxmark3) repository. Look for it via `VAS`, `vas` keywords. 
+- If you are interested in a fully code-complete Apple VAS implementation, you can look at the one made by [@gm3197](https://github.com/gm3197) that was added into a [Proxmark3](https://github.com/RfidResearchGroup/proxmark3) repository. Look for it via `VAS`, `vas` keywords.
+- Device Timestamp is a delta from `2001-01-01 00:00` in `UTC` timezone, so don't forget to convert it if you want to compare to a local date time.
 
 # Personal notes
 
